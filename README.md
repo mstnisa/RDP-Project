@@ -1,4 +1,4 @@
-# Penetration Testing Insights: RDP, Macro Exploits, and PHP Shell Uploads  
+# Penetration Testing Insights: RDP, Macro Exploits, and PHP Shell Upload
 *A practical guide to understanding common cybersecurity vulnerabilities and mitigation strategies.*
 
 ---
